@@ -42,7 +42,7 @@ class _PremiumAnalyzeButtonState extends State<PremiumAnalyzeButton>
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final double targetWidth = widget.isLoading ? 54 : constraints.maxWidth - 16;
+          final double targetWidth = constraints.maxWidth - 16;
 
           return GestureDetector(
             onTapDown: isEnabled && !widget.isLoading
@@ -63,18 +63,18 @@ class _PremiumAnalyzeButtonState extends State<PremiumAnalyzeButton>
                 builder: (context, child) {
                   // Pulse shadow blur and spread in sync with the shimmer
                   final pulse = sin(_shimmerController.value * 2 * pi);
-                  final shadowAlpha = widget.isLoading ? 0.0 : 0.35 + (pulse * 0.1);
-                  final blurRadius = widget.isLoading ? 0.0 : 14.0 + (pulse * 4.0);
-                  final spreadRadius = widget.isLoading ? 0.0 : (pulse * 1.5);
+                  final shadowAlpha = 0.35 + (pulse * 0.1);
+                  final blurRadius = 14.0 + (pulse * 4.0);
+                  final spreadRadius = pulse * 1.5;
 
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
                     height: 54,
-                    // Morphs from full width (minus margins) to circle size
+                    // Remains rectangular
                     width: targetWidth,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(widget.isLoading ? 27 : 12),
+                      borderRadius: BorderRadius.circular(12),
                       gradient: const LinearGradient(
                         colors: [Color(0xFF0F62FE), Color(0xFF0043CE)],
                         begin: Alignment.topLeft,
@@ -90,34 +90,33 @@ class _PremiumAnalyzeButtonState extends State<PremiumAnalyzeButton>
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(widget.isLoading ? 27 : 12),
+                      borderRadius: BorderRadius.circular(12),
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // Shimmer shine animation
-                          if (!widget.isLoading)
-                            Positioned.fill(
-                              child: FractionallySizedBox(
-                                widthFactor: 2.0,
-                                alignment: Alignment(
-                                  -2.0 + _shimmerController.value * 4.0,
-                                  0.0,
-                                ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.white.withValues(alpha: 0.0),
-                                        Colors.white.withValues(alpha: 0.45), // Brighter shine
-                                        Colors.white.withValues(alpha: 0.0),
-                                      ],
-                                      stops: const [0.4, 0.5, 0.6], // Sharper profile
-                                      transform: const GradientRotation(0.3),
-                                    ),
+                          // Shimmer shine animation runs continuously
+                          Positioned.fill(
+                            child: FractionallySizedBox(
+                              widthFactor: 2.0,
+                              alignment: Alignment(
+                                -2.0 + _shimmerController.value * 4.0,
+                                0.0,
+                              ),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.white.withValues(alpha: 0.0),
+                                      Colors.white.withValues(alpha: 0.45), // Brighter shine
+                                      Colors.white.withValues(alpha: 0.0),
+                                    ],
+                                    stops: const [0.4, 0.5, 0.6], // Sharper profile
+                                    transform: const GradientRotation(0.3),
                                   ),
                                 ),
                               ),
                             ),
+                          ),
                           // Button Content
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 200),

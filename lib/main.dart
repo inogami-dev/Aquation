@@ -1,5 +1,6 @@
 // import 'package:aquation/ai/test_screen.dart';
 import 'package:aquation/features/ai/tab.dart';
+import 'package:aquation/features/auth/presentation/login_page.dart';
 import 'package:aquation/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -29,13 +30,8 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: aquationTheme,
-      home: Scaffold(
-        body: Center(
-          // child: Text('Hello World!'),
-          // child: DashboardPage(),
-          child: MyTabs(),
-        ),
-      ),
+      // home: const LoginPage(),
+      home: MyTabs(),
     );
   }
 }

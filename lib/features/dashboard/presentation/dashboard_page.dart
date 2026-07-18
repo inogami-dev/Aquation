@@ -73,7 +73,7 @@ class DashboardPage extends StatelessWidget {
                           crossAxisCount: 2,
                           mainAxisSpacing: 12,
                           crossAxisSpacing: 12,
-                          childAspectRatio: 0.95,
+                          childAspectRatio: 1.15,
                         ),
                     itemBuilder: (context, index) {
                       final parameter = parameters[index];
@@ -246,7 +246,7 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
-class _ParameterCard extends StatelessWidget {
+class _ParameterCard extends StatefulWidget {
   final String title;
   final String value;
   final String unit;
@@ -266,13 +266,44 @@ class _ParameterCard extends StatelessWidget {
   });
 
   @override
+  State<_ParameterCard> createState() => _ParameterCardState();
+}
+
+class _ParameterCardState extends State<_ParameterCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
+  double _scale = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 0.93, end: 1.07).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _scale = 0.95),
+      onTapUp: (_) => setState(() => _scale = 1.0),
+      onTapCancel: () => setState(() => _scale = 1.0),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: const Duration(milliseconds: 100),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
@@ -290,42 +321,61 @@ class _ParameterCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      width: 36,
-                      height: 36,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: .1),
-                        borderRadius: BorderRadius.circular(8),
+                        color: widget.color.withValues(alpha: .1),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(icon, color: color, size: 18),
+                      child: Icon(widget.icon, color: widget.color, size: 22),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        status,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                    ScaleTransition(
+                      scale: _pulseAnimation,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: widget.color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: widget.color.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: widget.color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              widget.status,
+                              style: TextStyle(
+                                color: widget.color,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ],
                 ),
-                const Spacer(),
+                const SizedBox(height: 12),
                 Text(
-                  title,
+                  widget.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -341,7 +391,7 @@ class _ParameterCard extends StatelessWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: value,
+                          text: widget.value,
                           style: const TextStyle(
                             fontSize: 22,
                             color: Color(0xff0F172A),
@@ -349,7 +399,7 @@ class _ParameterCard extends StatelessWidget {
                           ),
                         ),
                         TextSpan(
-                          text: " $unit",
+                          text: " ${widget.unit}",
                           style: const TextStyle(
                             color: Color(0xff94A3B8),
                             fontSize: 12,
