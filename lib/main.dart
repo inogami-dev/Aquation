@@ -1,5 +1,7 @@
 // import 'package:aquation/ai/test_screen.dart';
-import 'package:aquation/ai/test_screen.dart';
+import 'package:aquation/ai/ai_screen.dart';
+import 'package:aquation/ai/tab.dart';
+import 'package:aquation/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -24,12 +26,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: aquationTheme,
       home: Scaffold(
         body: Center(
           // child: Text('Hello World!'),
-          child: AiTestScreen(),
+          child: MyTabs(),
         ),
       ),
     );
