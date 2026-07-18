@@ -1,4 +1,6 @@
-import 'package:aquation/ai/ai_screen.dart';
+import 'package:aquation/ai/presentation/ai_screen.dart';
+import 'package:aquation/pages/dashboard_page.dart';
+import 'package:aquation/pages/history_page.dart';
 import 'package:flutter/material.dart';
 
 class MyTabs extends StatefulWidget {
@@ -12,12 +14,13 @@ class _MyTabsState extends State<MyTabs> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         body: const TabBarView(
           children: [
-            Center(child: Text('Home Content')),
+            Center(child: DashboardPage()),
             Center(child: AiTestScreen()),
+            Center(child: HistoryPage()),
             Center(child: Text('Profile Content')),
           ],
         ),
@@ -43,6 +46,11 @@ class _MyTabsState extends State<MyTabs> {
                 Tab(
                   icon: Icon(Icons.star, size: 22),
                   text: 'Insights',
+                  iconMargin: EdgeInsets.only(bottom: 2),
+                ),
+                Tab(
+                  icon: Icon(Icons.history, size: 22),
+                  text: 'History',
                   iconMargin: EdgeInsets.only(bottom: 2),
                 ),
                 Tab(

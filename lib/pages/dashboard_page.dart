@@ -1,3 +1,4 @@
+import 'package:aquation/ai/domain/sensor_data.dart';
 import 'package:flutter/material.dart';
 import 'parameter_detail_page.dart';
 
@@ -6,57 +7,6 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> parameters = [
-      {
-        "title": "Temperature",
-        "value": "27.6",
-        "unit": "°C",
-        "status": "Normal",
-        "color": Colors.orange,
-        "icon": Icons.thermostat,
-      },
-      {
-        "title": "pH Level",
-        "value": "7.4",
-        "unit": "",
-        "status": "Optimal",
-        "color": Colors.green,
-        "icon": Icons.science,
-      },
-      {
-        "title": "Ammonia",
-        "value": "0.02",
-        "unit": "mg/L",
-        "status": "Safe",
-        "color": Colors.blue,
-        "icon": Icons.water_drop,
-      },
-      {
-        "title": "Nitrite",
-        "value": "0.08",
-        "unit": "mg/L",
-        "status": "Safe",
-        "color": Colors.purple,
-        "icon": Icons.opacity,
-      },
-      {
-        "title": "Dissolved Oxygen",
-        "value": "6.8",
-        "unit": "mg/L",
-        "status": "Good",
-        "color": Colors.teal,
-        "icon": Icons.air,
-      },
-      {
-        "title": "Turbidity",
-        "value": "14",
-        "unit": "NTU",
-        "status": "Clear",
-        "color": Colors.brown,
-        "icon": Icons.blur_on,
-      },
-    ];
-
     return Scaffold(
       backgroundColor: const Color(0xffEEF3F8),
       appBar: AppBar(
@@ -86,67 +36,96 @@ class DashboardPage extends StatelessWidget {
             ),
           ],
         ),
+        actions: [
+          GestureDetector(
+            onTap: () {
+              SensorData.randomize();
+            },
+            child: Container(
+              width: 60,
+              height: 60,
+              color: Colors.transparent,
+            ),
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildOverviewCard(),
-            const SizedBox(height: 20),
-            Expanded(
-              child: GridView.builder(
-                itemCount: parameters.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 18,
-                  crossAxisSpacing: 18,
-                  childAspectRatio: 0.88,
-                ),
-                itemBuilder: (context, index) {
-                  final parameter = parameters[index];
+      body: ValueListenableBuilder<List<SensorInfo>>(
+        valueListenable: SensorData.parametersNotifier,
+        builder: (context, parameters, child) {
+          // Calculate overall health state dynamically
+          final isHealthy = !parameters.any((p) => 
+            p.status == "Toxic" || 
+            p.status == "Critical" || 
+            p.status == "Warning" || 
+            p.status == "High" || 
+            p.status == "Acidic" || 
+            p.status == "Alkaline"
+          );
 
-                  return _ParameterCard(
-                    title: parameter["title"],
-                    value: parameter["value"],
-                    unit: parameter["unit"],
-                    status: parameter["status"],
-                    color: parameter["color"],
-                    icon: parameter["icon"],
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ParameterDetailPage(
-                            title: parameter["title"],
-                            color: parameter["color"],
-                          ),
-                        ),
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildOverviewCard(isHealthy),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: GridView.builder(
+                    itemCount: parameters.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 18,
+                      crossAxisSpacing: 18,
+                      childAspectRatio: 0.80,
+                    ),
+                    itemBuilder: (context, index) {
+                      final parameter = parameters[index];
+
+                      return _ParameterCard(
+                        title: parameter.title,
+                        value: parameter.value.toString(),
+                        unit: parameter.unit,
+                        status: parameter.status,
+                        color: parameter.color,
+                        icon: parameter.icon,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ParameterDetailPage(
+                                title: parameter.title,
+                                color: parameter.color,
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildOverviewCard() {
+  Widget _buildOverviewCard(bool isHealthy) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          colors: [Color(0xff2563EB), Color(0xff1D4ED8)],
+        gradient: LinearGradient(
+          colors: isHealthy
+              ? [const Color(0xff2563EB), const Color(0xff1D4ED8)]
+              : [const Color(0xffE11D48), const Color(0xff9F1239)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(.25),
+            color: (isHealthy ? Colors.blue : Colors.red).withValues(alpha: .25),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -155,57 +134,58 @@ class DashboardPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.water_drop, color: Colors.white, size: 28),
-
-              SizedBox(width: 10),
-
+              Icon(
+                isHealthy ? Icons.water_drop : Icons.warning_amber_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
+              const SizedBox(width: 10),
               Text(
                 "Water Quality",
-                style: TextStyle(color: Colors.white70, fontSize: 17),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 17,
+                ),
               ),
             ],
           ),
-
           const SizedBox(height: 18),
-
-          const Text(
-            "HEALTHY",
-            style: TextStyle(
+          Text(
+            isHealthy ? "HEALTHY" : "ATTENTION",
+            style: const TextStyle(
               fontSize: 34,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
-
           const SizedBox(height: 8),
-
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.greenAccent.withOpacity(.2),
+              color: (isHealthy ? Colors.greenAccent : Colors.orangeAccent).withValues(alpha: .2),
               borderRadius: BorderRadius.circular(50),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle, color: Colors.greenAccent, size: 18),
-
-                SizedBox(width: 6),
-
+                Icon(
+                  isHealthy ? Icons.check_circle : Icons.info_outline,
+                  color: isHealthy ? Colors.greenAccent : Colors.orangeAccent,
+                  size: 18,
+                ),
+                const SizedBox(width: 6),
                 Text(
-                  "All parameters are within range",
-                  style: TextStyle(color: Colors.white),
+                  isHealthy ? "All parameters are within range" : "Some parameters need checking",
+                  style: const TextStyle(color: Colors.white),
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: 20),
-
           const Text(
-            "Updated • 2:35 PM",
+            "Updated • Just Now",
             style: TextStyle(color: Colors.white70),
           ),
         ],
@@ -247,83 +227,91 @@ class _ParameterCard extends StatelessWidget {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(.04),
+                color: Colors.black.withValues(alpha: .04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(.12),
-                    borderRadius: BorderRadius.circular(16),
+                    color: color.withValues(alpha: .12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: color, size: 28),
+                  child: Icon(icon, color: color, size: 22),
                 ),
 
                 const Spacer(),
 
                 Text(
                   title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 17,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: Color(0xff0F172A),
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
 
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: value,
-                        style: const TextStyle(
-                          fontSize: 30,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: value,
+                          style: const TextStyle(
+                            fontSize: 26,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
 
-                      TextSpan(
-                        text: " $unit",
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
+                        TextSpan(
+                          text: " $unit",
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 6),
 
                 Row(
                   children: [
                     Container(
-                      width: 10,
-                      height: 10,
+                      width: 8,
+                      height: 8,
                       decoration: BoxDecoration(
                         color: color,
                         shape: BoxShape.circle,
                       ),
                     ),
 
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
 
                     Expanded(
                       child: Text(
                         status,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: color,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -331,7 +319,7 @@ class _ParameterCard extends StatelessWidget {
 
                     const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      size: 16,
+                      size: 12,
                       color: Colors.grey,
                     ),
                   ],
