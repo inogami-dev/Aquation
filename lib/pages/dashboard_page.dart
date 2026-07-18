@@ -27,7 +27,7 @@ class DashboardPage extends StatelessWidget {
             ),
             SizedBox(height: 3),
             Text(
-              "Aquation",
+              "Inogami",
               style: TextStyle(
                 color: Color(0xff0F172A),
                 fontWeight: FontWeight.bold,
@@ -41,11 +41,7 @@ class DashboardPage extends StatelessWidget {
             onTap: () {
               SensorData.randomize();
             },
-            child: Container(
-              width: 60,
-              height: 60,
-              color: Colors.transparent,
-            ),
+            child: Container(width: 60, height: 60, color: Colors.transparent),
           ),
         ],
       ),
@@ -53,13 +49,14 @@ class DashboardPage extends StatelessWidget {
         valueListenable: SensorData.parametersNotifier,
         builder: (context, parameters, child) {
           // Calculate overall health state dynamically
-          final isHealthy = !parameters.any((p) => 
-            p.status == "Toxic" || 
-            p.status == "Critical" || 
-            p.status == "Warning" || 
-            p.status == "High" || 
-            p.status == "Acidic" || 
-            p.status == "Alkaline"
+          final isHealthy = !parameters.any(
+            (p) =>
+                p.status == "Toxic" ||
+                p.status == "Critical" ||
+                p.status == "Warning" ||
+                p.status == "High" ||
+                p.status == "Acidic" ||
+                p.status == "Alkaline",
           );
 
           return Padding(
@@ -71,12 +68,13 @@ class DashboardPage extends StatelessWidget {
                 Expanded(
                   child: GridView.builder(
                     itemCount: parameters.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 18,
-                      crossAxisSpacing: 18,
-                      childAspectRatio: 0.80,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 18,
+                          crossAxisSpacing: 18,
+                          childAspectRatio: 0.80,
+                        ),
                     itemBuilder: (context, index) {
                       final parameter = parameters[index];
 
@@ -94,6 +92,7 @@ class DashboardPage extends StatelessWidget {
                               builder: (_) => ParameterDetailPage(
                                 title: parameter.title,
                                 color: parameter.color,
+                                value: parameter.value,
                               ),
                             ),
                           );
@@ -125,7 +124,9 @@ class DashboardPage extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: (isHealthy ? Colors.blue : Colors.red).withValues(alpha: .25),
+            color: (isHealthy ? Colors.blue : Colors.red).withValues(
+              alpha: .25,
+            ),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -164,7 +165,8 @@ class DashboardPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: (isHealthy ? Colors.greenAccent : Colors.orangeAccent).withValues(alpha: .2),
+              color: (isHealthy ? Colors.greenAccent : Colors.orangeAccent)
+                  .withValues(alpha: .2),
               borderRadius: BorderRadius.circular(50),
             ),
             child: Row(
@@ -177,7 +179,9 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  isHealthy ? "All parameters are within range" : "Some parameters need checking",
+                  isHealthy
+                      ? "All parameters are within range"
+                      : "Some parameters need checking",
                   style: const TextStyle(color: Colors.white),
                 ),
               ],
