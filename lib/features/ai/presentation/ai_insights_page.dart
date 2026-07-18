@@ -1,7 +1,8 @@
-import 'package:aquation/ai/domain/ai_logic.dart';
-import 'package:aquation/ai/domain/dimensions.dart';
-import 'package:aquation/ai/domain/sensor_data.dart';
-import 'package:aquation/ai/presentation/feedback_input.dart';
+import 'package:aquation/features/ai/domain/ai_logic.dart';
+import 'package:aquation/features/ai/domain/dimensions.dart';
+import 'package:aquation/features/ai/domain/sensor_data.dart';
+import 'package:aquation/features/ai/presentation/ai_analyze_button.dart';
+import 'package:aquation/features/ai/presentation/feedback_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 // import 'my_aquation_ai_logic.dart'; // Ensure you import your logic file
@@ -15,7 +16,7 @@ class AiTestScreen extends StatefulWidget {
 
 class _AiTestScreenState extends State<AiTestScreen> {
   bool _isLoading = false;
-  String _response = "Press the button below to analyze the water conditions.";
+  String _response = "Press the button above to analyze the water conditions.";
 
   Future<void> _runAnalysis() async {
     setState(() {
@@ -90,9 +91,13 @@ class _AiTestScreenState extends State<AiTestScreen> {
                             itemCount: parameters.length,
                             itemBuilder: (context, index) {
                               final parameter = parameters[index];
-                              final displayUnit = parameter.unit.isNotEmpty ? " ${parameter.unit}" : "";
+                              final displayUnit = parameter.unit.isNotEmpty
+                                  ? " ${parameter.unit}"
+                                  : "";
                               return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4.0,
+                                ),
                                 child: Text(
                                   "${parameter.title}: ${parameter.value}$displayUnit",
                                   style: const TextStyle(
@@ -112,33 +117,9 @@ class _AiTestScreenState extends State<AiTestScreen> {
                 const SizedBox(height: 24),
 
                 // Analyze Button
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _runAnalysis,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F62FE),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          "Analyze Conditions",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                PremiumAnalyzeButton(
+                  isLoading: _isLoading,
+                  onPressed: _runAnalysis,
                 ),
                 const SizedBox(height: 32),
 
@@ -176,9 +157,31 @@ class _AiTestScreenState extends State<AiTestScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
 
-                // Feedback Input
-                const FeedbackInput(),
+                // Feedback Input Card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 4,
+                    bottom: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const FeedbackInput(),
+                ),
               ],
             ),
           ),

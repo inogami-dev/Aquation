@@ -1,7 +1,7 @@
-import 'package:aquation/ai/presentation/ai_screen.dart';
-import 'package:aquation/pages/dashboard_page.dart';
-import 'package:aquation/pages/history_page.dart';
-import 'package:aquation/pages/profile_page.dart';
+import 'package:aquation/features/ai/presentation/ai_insights_page.dart';
+import 'package:aquation/features/dashboard/presentation/dashboard_page.dart';
+import 'package:aquation/features/history/history_page.dart';
+import 'package:aquation/features/profile_page/profile_page.dart';
 import 'package:flutter/material.dart';
 
 class MyTabs extends StatefulWidget {
