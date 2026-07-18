@@ -1,4 +1,4 @@
-import 'package:aquation/ai/presentation/ai_screen.dart';
+import 'package:aquation/ai/presentation/ai_insights_page.dart';
 import 'package:aquation/pages/dashboard_page.dart';
 import 'package:aquation/pages/history_page.dart';
 import 'package:aquation/pages/profile_page.dart';

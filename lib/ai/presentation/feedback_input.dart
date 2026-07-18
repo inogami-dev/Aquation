@@ -14,6 +14,7 @@ class FeedbackInputState extends State<FeedbackInput>
   late final Animation<double> _fadeAnimation;
 
   bool _showFeedback = false;
+  bool _isTextEmpty = true;
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
@@ -32,14 +33,25 @@ class FeedbackInputState extends State<FeedbackInput>
       parent: _animationController,
       curve: Curves.easeIn,
     );
+    _controller.addListener(_handleTextChanged);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_handleTextChanged);
     _animationController.dispose();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  void _handleTextChanged() {
+    final currentlyEmpty = _controller.text.trim().isEmpty;
+    if (currentlyEmpty != _isTextEmpty) {
+      setState(() {
+        _isTextEmpty = currentlyEmpty;
+      });
+    }
   }
 
   void _toggleFeedback(bool value) {
@@ -68,7 +80,7 @@ class FeedbackInputState extends State<FeedbackInput>
           onTap: () => _toggleFeedback(!_showFeedback),
           borderRadius: BorderRadius.circular(4),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -92,24 +104,91 @@ class FeedbackInputState extends State<FeedbackInput>
             opacity: _fadeAnimation,
             child: Padding(
               padding: const EdgeInsets.only(
-                left: 12.0,
-                right: 12.0,
+                // left: 12.0,
+                // right: 12.0,
                 bottom: 12.0,
-                top: 4.0,
+                // top: 4.0,
               ),
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                decoration: InputDecoration(
-                  hintText: 'Type your feedback here...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          decoration: InputDecoration(
+                            hintText: 'Type your feedback here...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                      AnimatedOpacity(
+                        opacity: _isTextEmpty ? 0.0 : 1.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOut,
+                          child: _isTextEmpty
+                              ? const SizedBox.shrink()
+                              : Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: SizedBox(
+                                    width: 48,
+                                    height: 48,
+                                    child: Material(
+                                      color: const Color(0xff0F62FE),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.send_rounded,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                        onPressed: () {
+                                          // Clear input and remove focus on send
+                                          _controller.clear();
+                                          _focusNode.unfocus();
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: 14,
+                        color: Colors.grey[600],
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          "Disclaimer: The prompt must be relevant to the AI insights, such as a correction or a follow-up question.",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                ],
               ),
             ),
           ),

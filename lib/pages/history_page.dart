@@ -1,4 +1,3 @@
-import 'package:aquation/ai/domain/sensor_data.dart';
 import 'package:aquation/ai/domain/sensor_history.dart';
 import 'package:flutter/material.dart';
 
@@ -21,8 +20,18 @@ class HistoryPage extends StatelessWidget {
       return "Yesterday • $hour:$minute $ampm";
     } else {
       final monthNames = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
       ];
       return "${monthNames[dt.month - 1]} ${dt.day} • $hour:$minute $ampm";
     }
@@ -50,11 +59,7 @@ class HistoryPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
-                  Icon(
-                    Icons.history,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
+                  Icon(Icons.history, size: 64, color: Colors.grey),
                   SizedBox(height: 16),
                   Text(
                     "No history records found",
@@ -78,15 +83,16 @@ class HistoryPage extends StatelessWidget {
             itemCount: history.length,
             itemBuilder: (context, index) {
               final record = history[index];
-              
+
               // Calculate if the record had any warnings
-              final isHealthy = !record.parameters.any((p) =>
-                p.status == "Toxic" ||
-                p.status == "Critical" ||
-                p.status == "Warning" ||
-                p.status == "High" ||
-                p.status == "Acidic" ||
-                p.status == "Alkaline"
+              final isHealthy = !record.parameters.any(
+                (p) =>
+                    p.status == "Toxic" ||
+                    p.status == "Critical" ||
+                    p.status == "Warning" ||
+                    p.status == "High" ||
+                    p.status == "Acidic" ||
+                    p.status == "Alkaline",
               );
 
               return Card(
@@ -149,7 +155,9 @@ class HistoryPage extends StatelessWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: record.parameters.map((p) {
-                          final displayUnit = p.unit.isNotEmpty ? " ${p.unit}" : "";
+                          final displayUnit = p.unit.isNotEmpty
+                              ? " ${p.unit}"
+                              : "";
                           return Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -158,7 +166,9 @@ class HistoryPage extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: const Color(0xFFF8F9FA),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFEAEAEA)),
+                              border: Border.all(
+                                color: const Color(0xFFEAEAEA),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
