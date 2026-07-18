@@ -1,6 +1,6 @@
 name: aquation
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  fl_chart: ^0.68.0
   firebase_core: ^4.12.1
   flutter_dotenv: ^6.0.1
   mistralai_dart: ^5.0.0

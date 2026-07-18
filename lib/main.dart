@@ -1,5 +1,4 @@
 // import 'package:aquation/ai/test_screen.dart';
-import 'package:aquation/ai/presentation/ai_screen.dart';
 import 'package:aquation/ai/tab.dart';
 import 'package:aquation/theme/theme.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ void main() async {
   // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // // Add this App Check activation block
   // await FirebaseAppCheck.instance.activate(
+
   //   // The new standard for Android testing
   //   providerAndroid: AndroidDebugProvider(),
 
@@ -32,6 +32,7 @@ class MainApp extends StatelessWidget {
       home: Scaffold(
         body: Center(
           // child: Text('Hello World!'),
+          // child: DashboardPage(),
           child: MyTabs(),
         ),
       ),

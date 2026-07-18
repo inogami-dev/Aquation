@@ -1,5 +1,6 @@
 import 'package:aquation/ai/domain/ai_logic.dart';
 import 'package:aquation/ai/domain/dimensions.dart';
+import 'package:aquation/ai/domain/sensor_data.dart';
 import 'package:aquation/ai/presentation/feedback_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -16,26 +17,14 @@ class _AiTestScreenState extends State<AiTestScreen> {
   bool _isLoading = false;
   String _response = "Press the button below to analyze the water conditions.";
 
-  // Mock data representing Temperature, pH, Dissolved Oxygen, Ammonia, Nitrite, and Turbidity
-  static const List<double> _mockSensors = [32.1, 6.0, 3.8, 0.25, 0.05, 15.0];
-
-  static const List<String> _sensorNames = [
-    "Temperature",
-    "pH",
-    "Dissolved Oxygen",
-    "Ammonia",
-    "Nitrite",
-    "Turbidity",
-  ];
-
   Future<void> _runAnalysis() async {
     setState(() {
       _isLoading = true;
       _response = "Analyzing water conditions...";
     });
 
-    // Initialize your improved logic class
-    final logic = MyAquationAiLogic(sensorValues: _mockSensors);
+    // Initialize your improved logic class with synced data
+    final logic = MyAquationAiLogic(sensorValues: SensorData.values);
     final result = await logic.getResponse();
 
     setState(() {
@@ -92,24 +81,28 @@ class _AiTestScreenState extends State<AiTestScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _mockSensors.length,
-                        itemBuilder: (context, index) {
-                          final name = index < _sensorNames.length
-                              ? _sensorNames[index]
-                              : "Sensor ${index + 1}";
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Text(
-                              "$name: ${_mockSensors[index]}",
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.blueGrey,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                      ValueListenableBuilder<List<SensorInfo>>(
+                        valueListenable: SensorData.parametersNotifier,
+                        builder: (context, parameters, child) {
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: parameters.length,
+                            itemBuilder: (context, index) {
+                              final parameter = parameters[index];
+                              final displayUnit = parameter.unit.isNotEmpty ? " ${parameter.unit}" : "";
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                child: Text(
+                                  "${parameter.title}: ${parameter.value}$displayUnit",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.blueGrey,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
