@@ -1,5 +1,5 @@
 // import 'package:aquation/ai/test_screen.dart';
-import 'package:aquation/ai/ai_screen.dart';
+import 'package:aquation/ai/presentation/ai_screen.dart';
 import 'package:aquation/ai/tab.dart';
 import 'package:aquation/theme/theme.dart';
 import 'package:flutter/material.dart';
