@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "197017228975",
+    "project_id": "aquation-5c8a8",
+    "storage_bucket": "aquation-5c8a8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197017228975:android:5408ef146ab8fabee8a65a",
+        "android_client_info": {
+          "package_name": "com.example.aquation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZnqhx0Ikih0aD8IhKDlz_MD42U5_9048"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
