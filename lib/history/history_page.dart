@@ -1,4 +1,4 @@
-import 'package:aquation/ai/domain/sensor_history.dart';
+import 'package:aquation/features/ai/domain/sensor_history.dart';
 import 'package:flutter/material.dart';
 
 class HistoryPage extends StatelessWidget {

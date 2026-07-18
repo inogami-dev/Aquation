@@ -1,8 +1,8 @@
-import 'package:aquation/ai/domain/ai_logic.dart';
-import 'package:aquation/ai/domain/dimensions.dart';
-import 'package:aquation/ai/domain/sensor_data.dart';
-import 'package:aquation/ai/presentation/ai_analyze_button.dart';
-import 'package:aquation/ai/presentation/feedback_input.dart';
+import 'package:aquation/features/ai/domain/ai_logic.dart';
+import 'package:aquation/features/ai/domain/dimensions.dart';
+import 'package:aquation/features/ai/domain/sensor_data.dart';
+import 'package:aquation/features/ai/presentation/ai_analyze_button.dart';
+import 'package:aquation/features/ai/presentation/feedback_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 // import 'my_aquation_ai_logic.dart'; // Ensure you import your logic file
