@@ -1,6 +1,7 @@
 import 'package:aquation/ai/presentation/ai_screen.dart';
 import 'package:aquation/pages/dashboard_page.dart';
 import 'package:aquation/pages/history_page.dart';
+import 'package:aquation/pages/profile_page.dart';
 import 'package:flutter/material.dart';
 
 class MyTabs extends StatefulWidget {
@@ -21,7 +22,7 @@ class _MyTabsState extends State<MyTabs> {
             Center(child: DashboardPage()),
             Center(child: AiTestScreen()),
             Center(child: HistoryPage()),
-            Center(child: Text('Profile Content')),
+            Center(child: ProfilePage()),
           ],
         ),
         // 1. Move the TabBar to the bottomNavigationBar

@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class ParameterDetailPage extends StatelessWidget {
   final String title;
   final Color color;
+  final double value;
 
   const ParameterDetailPage({
     super.key,
     required this.title,
     required this.color,
+    required this.value,
   });
 
   @override
@@ -66,8 +68,8 @@ class ParameterDetailPage extends StatelessWidget {
 
                   const SizedBox(height: 10),
 
-                  const Text(
-                    "27.6",
+                  Text(
+                    value.toString(),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 48,
