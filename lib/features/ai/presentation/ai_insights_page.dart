@@ -1,11 +1,13 @@
+import 'package:aquation/features/ai/data/db_helper.dart';
 import 'package:aquation/features/ai/domain/ai_logic.dart';
 import 'package:aquation/features/ai/domain/dimensions.dart';
 import 'package:aquation/features/ai/domain/sensor_data.dart';
+import 'package:aquation/features/ai/domain/sensor_history.dart';
 import 'package:aquation/features/ai/presentation/ai_analyze_button.dart';
 import 'package:aquation/features/ai/presentation/feedback_input.dart';
+import 'package:aquation/features/ai/presentation/saved_insights_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-// import 'my_aquation_ai_logic.dart'; // Ensure you import your logic file
 
 class AiTestScreen extends StatefulWidget {
   const AiTestScreen({super.key});
@@ -17,21 +19,56 @@ class AiTestScreen extends StatefulWidget {
 class _AiTestScreenState extends State<AiTestScreen> {
   bool _isLoading = false;
   String _response = "Press the button above to analyze the water conditions.";
+  int? _currentInsightId;
 
   Future<void> _runAnalysis() async {
     setState(() {
       _isLoading = true;
       _response = "Analyzing water conditions...";
+      _currentInsightId = null;
     });
 
-    // Initialize your improved logic class with synced data
-    final logic = MyAquationAiLogic(sensorValues: SensorData.values);
-    final result = await logic.getResponse();
+    try {
+      // Initialize your improved logic class with synced data
+      final logic = MyAquationAiLogic(sensorValues: SensorData.values);
+      final result = await logic.getResponse();
 
-    setState(() {
-      _isLoading = false;
-      _response = result;
-    });
+      final parameters = SensorData.parameters;
+      final temp = parameters[0].value;
+      final ph = parameters[1].value;
+      final dissolvedOxygen = parameters[2].value;
+      final turbidity = parameters[3].value;
+
+      int? newId;
+      try {
+        newId = await DatabaseHelper.instance.insertInsight(
+          temperature: temp,
+          phLevel: ph,
+          dissolvedOxygen: dissolvedOxygen,
+          turbidity: turbidity,
+          insight: result,
+        );
+      } catch (dbError) {
+        debugPrint("SQLite Database write error (this can happen on Windows without FFI initialization): $dbError");
+      }
+
+      SensorHistory.addRecord(
+        parameters,
+        aiInsight: result,
+      );
+
+      setState(() {
+        _isLoading = false;
+        _response = result;
+        _currentInsightId = newId;
+      });
+    } catch (e) {
+      debugPrint("Water quality analysis error: $e");
+      setState(() {
+        _isLoading = false;
+        _response = "Error running analysis: $e\n\nPlease check your internet connection or Gemini API credentials.";
+      });
+    }
   }
 
   @override
@@ -43,6 +80,18 @@ class _AiTestScreenState extends State<AiTestScreen> {
           'Crayfish Farm AI',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history_rounded),
+            tooltip: "Saved Insights",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SavedInsightsPage()),
+              );
+            },
+          ),
+        ],
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 1,
@@ -180,7 +229,53 @@ class _AiTestScreenState extends State<AiTestScreen> {
                       ),
                     ],
                   ),
-                  child: const FeedbackInput(),
+                  child: FeedbackInput(
+                    onSendFeedback: (feedback) async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      if (_currentInsightId != null) {
+                        await DatabaseHelper.instance.updateFeedback(
+                          _currentInsightId!,
+                          feedback,
+                        );
+
+                        // Also update the in-memory history list so the new feedback is visible in Pond History
+                        final historyList = SensorHistory.historyNotifier.value;
+                        if (historyList.isNotEmpty) {
+                          final updatedList = List<SensorHistoryRecord>.from(historyList);
+                          final latest = updatedList.first;
+                          updatedList[0] = SensorHistoryRecord(
+                            timestamp: latest.timestamp,
+                            parameters: latest.parameters,
+                            aiInsight: latest.aiInsight,
+                            feedback: feedback,
+                          );
+                          SensorHistory.historyNotifier.value = updatedList;
+                        }
+
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Feedback and analysis saved to database!",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            backgroundColor: Color(0xff0F62FE),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      } else {
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Please run analysis before sending feedback.",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            backgroundColor: Colors.orange,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ),
               ],
             ),

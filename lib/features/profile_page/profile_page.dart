@@ -1,3 +1,4 @@
+import 'package:aquation/features/auth/presentation/login_page.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -105,7 +106,7 @@ class ProfilePage extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildDetailRow(Icons.calendar_today_rounded, "Age", "44"),
                   const Divider(height: 24, color: Color(0xffF1F5F9)),
-                  _buildDetailRow(Icons.pin_rounded, "Tub No.", "2"),
+                  _buildDetailRow(Icons.pin_rounded, "Pond No.", "2"),
                 ],
               ),
             ),
@@ -130,7 +131,7 @@ class ProfilePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Amount per Tab",
+                    "Crayfish/Tab",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -150,6 +151,52 @@ class ProfilePage extends StatelessWidget {
                     "350 Craylings",
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Logout Button Card
+            GestureDetector(
+              onTap: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(
+                      Icons.logout_rounded,
+                      color: Color(0xffEF4444),
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      "Log Out",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xffEF4444),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

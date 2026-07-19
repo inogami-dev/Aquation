@@ -41,22 +41,6 @@ class SensorData {
       icon: Icons.science,
     ),
     const SensorInfo(
-      title: "Ammonia",
-      value: 0.02,
-      unit: "mg/L",
-      status: "Safe",
-      color: Colors.blue,
-      icon: Icons.water_drop,
-    ),
-    const SensorInfo(
-      title: "Nitrite",
-      value: 0.08,
-      unit: "mg/L",
-      status: "Safe",
-      color: Colors.purple,
-      icon: Icons.opacity,
-    ),
-    const SensorInfo(
       title: "Dissolved Oxygen",
       value: 6.8,
       unit: "mg/L",
@@ -111,33 +95,7 @@ class SensorData {
       phColor = Colors.red;
     }
 
-    // 3. Ammonia: 0.0 to 1.0 mg/L (usually low)
-    final rawAmmonia = random.nextDouble() < 0.7 ? random.nextDouble() * 0.04 : random.nextDouble() * 0.8;
-    final ammonia = double.parse(rawAmmonia.toStringAsFixed(2));
-    String ammoniaStatus = "Safe";
-    Color ammoniaColor = Colors.blue;
-    if (ammonia >= 0.05 && ammonia <= 0.2) {
-      ammoniaStatus = "Warning";
-      ammoniaColor = Colors.orange;
-    } else if (ammonia > 0.2) {
-      ammoniaStatus = "Toxic";
-      ammoniaColor = Colors.red;
-    }
-
-    // 4. Nitrite: 0.0 to 1.0 mg/L (usually low)
-    final rawNitrite = random.nextDouble() < 0.7 ? random.nextDouble() * 0.09 : random.nextDouble() * 0.7;
-    final nitrite = double.parse(rawNitrite.toStringAsFixed(2));
-    String nitriteStatus = "Safe";
-    Color nitriteColor = Colors.purple;
-    if (nitrite >= 0.1 && nitrite <= 0.5) {
-      nitriteStatus = "Warning";
-      nitriteColor = Colors.orange;
-    } else if (nitrite > 0.5) {
-      nitriteStatus = "Toxic";
-      nitriteColor = Colors.red;
-    }
-
-    // 5. Dissolved Oxygen: 2.0 to 9.0 mg/L
+    // 3. Dissolved Oxygen: 2.0 to 9.0 mg/L
     final doVal = double.parse((2.0 + random.nextDouble() * 7.0).toStringAsFixed(1));
     String doStatus = "Good";
     Color doColor = Colors.teal;
@@ -149,7 +107,7 @@ class SensorData {
       doColor = Colors.orange;
     }
 
-    // 6. Turbidity: 5.0 to 45.0 NTU
+    // 4. Turbidity: 5.0 to 45.0 NTU
     final turbidity = double.parse((5.0 + random.nextDouble() * 40.0).toStringAsFixed(1));
     String turbidityStatus = "Clear";
     Color turbidityColor = Colors.brown;
@@ -179,22 +137,6 @@ class SensorData {
         icon: Icons.science,
       ),
       SensorInfo(
-        title: "Ammonia",
-        value: ammonia,
-        unit: "mg/L",
-        status: ammoniaStatus,
-        color: ammoniaColor,
-        icon: Icons.water_drop,
-      ),
-      SensorInfo(
-        title: "Nitrite",
-        value: nitrite,
-        unit: "mg/L",
-        status: nitriteStatus,
-        color: nitriteColor,
-        icon: Icons.opacity,
-      ),
-      SensorInfo(
         title: "Dissolved Oxygen",
         value: doVal,
         unit: "mg/L",
@@ -213,4 +155,3 @@ class SensorData {
     ];
   }
 }
-

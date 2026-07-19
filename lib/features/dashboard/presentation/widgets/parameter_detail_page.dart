@@ -13,6 +13,36 @@ class ParameterDetailPage extends StatelessWidget {
     required this.value,
   });
 
+  String _getUnit(String title) {
+    switch (title.toLowerCase()) {
+      case "temperature":
+        return "°C";
+      case "ph level":
+        return "";
+      case "dissolved oxygen":
+        return "mg/L";
+      case "turbidity":
+        return "NTU";
+      default:
+        return "";
+    }
+  }
+
+  String _getStatus(String title, double val) {
+    switch (title.toLowerCase()) {
+      case "temperature":
+        return (val >= 24 && val <= 30) ? "Normal" : "Warning";
+      case "ph level":
+        return (val >= 7.0 && val <= 8.5) ? "Normal" : "Warning";
+      case "dissolved oxygen":
+        return (val >= 5.0) ? "Normal" : "Toxic";
+      case "turbidity":
+        return (val >= 5 && val <= 15) ? "Normal" : "Warning";
+      default:
+        return "Normal";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,14 +73,14 @@ class ParameterDetailPage extends StatelessWidget {
             //-----------------------------------
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(22),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
                     color: color.withOpacity(.25),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
                   ),
                 ],
                 gradient: LinearGradient(
@@ -59,55 +89,94 @@ class ParameterDetailPage extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: Column(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "Current Reading",
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    value.toString(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
+                  // Left Side: Title and Reading Value
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "Current Reading",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              value.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 38,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (_getUnit(title).isNotEmpty) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                _getUnit(title),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
                     ),
                   ),
 
-                  const Text(
-                    "°C",
-                    style: TextStyle(color: Colors.white70, fontSize: 18),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Text(
-                      "Normal",
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.bold,
+                  // Right Side: Status Capsule and Timestamp
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(50),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          _getStatus(title, value),
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  const Text(
-                    "Last Updated\n2:35 PM",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white70),
+                      const SizedBox(height: 10),
+                      const Text(
+                        "Updated Just Now",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -425,7 +494,7 @@ class ParameterDetailPage extends StatelessWidget {
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             Icon(icon, color: color),

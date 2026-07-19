@@ -1,8 +1,16 @@
 import 'package:aquation/features/ai/domain/sensor_history.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
-class HistoryPage extends StatelessWidget {
+class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
+
+  @override
+  State<HistoryPage> createState() => _HistoryPageState();
+}
+
+class _HistoryPageState extends State<HistoryPage> {
+  final Set<int> _expandedIndices = {};
 
   String _formatTimestamp(DateTime dt) {
     final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
@@ -20,21 +28,21 @@ class HistoryPage extends StatelessWidget {
       return "Yesterday • $hour:$minute $ampm";
     } else {
       final monthNames = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
       ];
       return "${monthNames[dt.month - 1]} ${dt.day} • $hour:$minute $ampm";
     }
+  }
+
+  void _toggleExpand(int index) {
+    setState(() {
+      if (_expandedIndices.contains(index)) {
+        _expandedIndices.remove(index);
+      } else {
+        _expandedIndices.add(index);
+      }
+    });
   }
 
   @override
@@ -44,7 +52,7 @@ class HistoryPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           "Pond History",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xff0F172A)),
         ),
         backgroundColor: const Color(0xffF4F7FA),
         elevation: 0,
@@ -83,6 +91,7 @@ class HistoryPage extends StatelessWidget {
             itemCount: history.length,
             itemBuilder: (context, index) {
               final record = history[index];
+              final isExpanded = _expandedIndices.contains(index);
 
               // Calculate if the record had any warnings
               final isHealthy = !record.parameters.any(
@@ -103,100 +112,187 @@ class HistoryPage extends StatelessWidget {
                 ),
                 color: Colors.white,
                 margin: const EdgeInsets.only(bottom: 16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.access_time_rounded,
-                                size: 18,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _formatTimestamp(record.timestamp),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                child: InkWell(
+                  onTap: record.aiInsight != null ? () => _toggleExpand(index) : null,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.access_time_rounded,
+                                  size: 18,
                                   color: Colors.grey,
                                 ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: (isHealthy ? Colors.green : Colors.red)
-                                  .withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              isHealthy ? "Healthy" : "Attention",
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: isHealthy ? Colors.green : Colors.red,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: record.parameters.map((p) {
-                          final displayUnit = p.unit.isNotEmpty
-                              ? " ${p.unit}"
-                              : "";
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF8F9FA),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: const Color(0xFFEAEAEA),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(p.icon, size: 14, color: p.color),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 6),
                                 Text(
-                                  "${p.title}: ",
+                                  _formatTimestamp(record.timestamp),
                                   style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                Text(
-                                  "${p.value}$displayUnit",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: p.color,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey,
                                   ),
                                 ),
                               ],
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: (isHealthy ? Colors.green : Colors.red)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    isHealthy ? "Healthy" : "Attention",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: isHealthy ? Colors.green : Colors.red,
+                                    ),
+                                  ),
+                                ),
+                                if (record.aiInsight != null) ...[
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    isExpanded
+                                        ? Icons.keyboard_arrow_up_rounded
+                                        : Icons.keyboard_arrow_down_rounded,
+                                    color: Colors.grey[500],
+                                    size: 20,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: record.parameters.map((p) {
+                            final displayUnit = p.unit.isNotEmpty
+                                ? " ${p.unit}"
+                                : "";
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8F9FA),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: const Color(0xFFEAEAEA),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(p.icon, size: 14, color: p.color),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "${p.title}: ",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  Text(
+                                    "${p.value}$displayUnit",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: p.color,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeInOut,
+                          child: isExpanded && record.aiInsight != null
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Divider(height: 24, color: Color(0xffF1F5F9)),
+                                    const Text(
+                                      "AI Analysis Insight",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xff0F172A),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    MarkdownBody(
+                                      data: record.aiInsight!,
+                                      styleSheet: MarkdownStyleSheet(
+                                        p: const TextStyle(fontSize: 13, height: 1.5, color: Colors.black87),
+                                      ),
+                                    ),
+                                    if (record.feedback != null && record.feedback!.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xffEFF6FF),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(color: const Color(0xffDBEAFE)),
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Icon(Icons.comment_rounded, color: Color(0xff3B82F6), size: 16),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  const Text(
+                                                    "Operator Feedback",
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Color(0xff1E40AF),
+                                                      fontSize: 11,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    record.feedback!,
+                                                    style: const TextStyle(
+                                                      color: Color(0xff1E3A8A),
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
