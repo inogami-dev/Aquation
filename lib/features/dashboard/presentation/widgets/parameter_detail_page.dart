@@ -23,6 +23,10 @@ class ParameterDetailPage extends StatelessWidget {
         return "mg/L";
       case "turbidity":
         return "NTU";
+      case "ammonia":
+        return "mg/L";
+      case "nitrite":
+        return "mg/L";
       default:
         return "";
     }
@@ -38,8 +42,50 @@ class ParameterDetailPage extends StatelessWidget {
         return (val >= 5.0) ? "Normal" : "Toxic";
       case "turbidity":
         return (val >= 5 && val <= 15) ? "Normal" : "Warning";
+      case "ammonia":
+        return (val <= 0.02) ? "Normal" : (val <= 0.05 ? "Warning" : "Toxic");
+      case "nitrite":
+        return (val <= 0.05) ? "Normal" : (val <= 0.1 ? "Warning" : "Toxic");
       default:
         return "Normal";
+    }
+  }
+
+  String _getOptimalRange(String title) {
+    switch (title.toLowerCase()) {
+      case "temperature":
+        return "24°C - 30°C";
+      case "ph level":
+        return "7.0 - 8.5";
+      case "dissolved oxygen":
+        return ">= 5.0 mg/L";
+      case "turbidity":
+        return "5.0 NTU - 15.0 NTU";
+      case "ammonia":
+        return "<= 0.02 mg/L";
+      case "nitrite":
+        return "<= 0.05 mg/L";
+      default:
+        return "";
+    }
+  }
+
+  Map<String, String> _getMockStats(String title) {
+    switch (title.toLowerCase()) {
+      case "temperature":
+        return {"min": "26.2", "max": "27.8", "avg": "27.1"};
+      case "ph level":
+        return {"min": "7.2", "max": "7.9", "avg": "7.5"};
+      case "dissolved oxygen":
+        return {"min": "5.8", "max": "7.2", "avg": "6.5"};
+      case "turbidity":
+        return {"min": "8.5", "max": "14.8", "avg": "12.1"};
+      case "ammonia":
+        return {"min": "0.01", "max": "0.03", "avg": "0.02"};
+      case "nitrite":
+        return {"min": "0.02", "max": "0.07", "avg": "0.04"};
+      default:
+        return {"min": "0.0", "max": "0.0", "avg": "0.0"};
     }
   }
 
@@ -407,7 +453,7 @@ class ParameterDetailPage extends StatelessWidget {
                 Expanded(
                   child: _infoCard(
                     "Minimum",
-                    "26.2",
+                    _getMockStats(title)["min"]!,
                     Icons.arrow_downward,
                     Colors.blue,
                   ),
@@ -418,7 +464,7 @@ class ParameterDetailPage extends StatelessWidget {
                 Expanded(
                   child: _infoCard(
                     "Maximum",
-                    "27.8",
+                    _getMockStats(title)["max"]!,
                     Icons.arrow_upward,
                     Colors.red,
                   ),
@@ -429,7 +475,7 @@ class ParameterDetailPage extends StatelessWidget {
                 Expanded(
                   child: _infoCard(
                     "Average",
-                    "27.1",
+                    _getMockStats(title)["avg"]!,
                     Icons.analytics,
                     Colors.green,
                   ),
@@ -473,7 +519,7 @@ class ParameterDetailPage extends StatelessWidget {
                           const SizedBox(height: 6),
 
                           Text(
-                            "24°C - 30°C",
+                            _getOptimalRange(title),
                             style: TextStyle(color: Colors.grey[700]),
                           ),
                         ],

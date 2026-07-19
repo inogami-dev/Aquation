@@ -253,6 +253,18 @@ class _SavedInsightsPageState extends State<SavedInsightsPage> {
                                 "${row['turbidity']} NTU",
                                 Colors.brown,
                               ),
+                              if (row['ammonia'] != null)
+                                _badge(
+                                  "Ammonia",
+                                  "${row['ammonia']} mg/L",
+                                  Colors.blue,
+                                ),
+                              if (row['nitrite'] != null)
+                                _badge(
+                                  "Nitrite",
+                                  "${row['nitrite']} mg/L",
+                                  Colors.purple,
+                                ),
                             ],
                           ),
                           if (isExpanded) ...[

@@ -29,15 +29,47 @@ class _AiTestScreenState extends State<AiTestScreen> {
     });
 
     try {
+      // Format a clean, labeled prompt with only the currently active sensor readings
+      final promptBuilder = """
+Act as a friendly, helpful aquaculture expert having a casual, one-on-one chat with a local crayfish farmer.
+Here are the current water sensor readings from my pond:
+${SensorData.parameters.map((p) => "- ${p.title}: ${p.value}${p.unit.isNotEmpty ? ' ${p.unit}' : ''} (${p.status})").join("\n")}
+
+In a natural, everyday conversational tone, please tell me:
+1. What do these readings mean, and what is likely happening in my pond right now?
+2. What easy, step-by-step actions should I take immediately to keep my crayfish healthy and prevent any from dying?
+3. What are some simple things I can do to grow more crayfish and make a better profit down the line?
+
+Strict Rules for this conversation:
+- Summarize everything.
+- Highlight the actual and necessary suggestion you want the farmer to make base on the serson values.
+- Limit your response to only few senteces, but make it more relevant.
+- If the sensor value seems just a normal value (not dangerous or a potential threat to crayfishes just ignore it). And provide a 
+  desclaimer that you are excluding the sensors with a normal value.
+- Speak directly to me like we are standing next to the pond chatting face-to-face.
+- Keep it very simple and easy to comprehend. Avoid complicated scientific jargon, complex charts, or rigid markdown tables. 
+- Keep your advice highly practical for a non-technical person.
+- Do NOT ask any follow-up questions at the end of your response.
+""";
+
       // Initialize your improved logic class with synced data
-      final logic = MyAquationAiLogic(sensorValues: SensorData.values);
+      final logic = MyAquationAiLogic(prompt: promptBuilder, sensorValues: SensorData.values);
       final result = await logic.getResponse();
 
       final parameters = SensorData.parameters;
-      final temp = parameters[0].value;
-      final ph = parameters[1].value;
-      final dissolvedOxygen = parameters[2].value;
-      final turbidity = parameters[3].value;
+      double getVal(String title, double def) {
+        final match = parameters.where((p) => p.title.toLowerCase().contains(title.toLowerCase()));
+        return match.isNotEmpty ? match.first.value : def;
+      }
+
+      final temp = getVal("temp", 27.6);
+      final ph = getVal("ph", 7.4);
+      final dissolvedOxygen = getVal("oxygen", 6.8);
+      final turbidity = getVal("turbidity", 14.0);
+
+      // Optional parameters
+      final ammonia = SensorData.activeSensorTitlesNotifier.value.contains("Ammonia") ? getVal("ammonia", 0.02) : null;
+      final nitrite = SensorData.activeSensorTitlesNotifier.value.contains("Nitrite") ? getVal("nitrite", 0.08) : null;
 
       int? newId;
       try {
@@ -46,6 +78,8 @@ class _AiTestScreenState extends State<AiTestScreen> {
           phLevel: ph,
           dissolvedOxygen: dissolvedOxygen,
           turbidity: turbidity,
+          ammonia: ammonia,
+          nitrite: nitrite,
           insight: result,
         );
       } catch (dbError) {

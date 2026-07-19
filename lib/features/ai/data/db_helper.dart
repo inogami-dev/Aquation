@@ -10,7 +10,7 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('aquation_ai_insights.db');
+    _database = await _initDB('aquation_ai_insights_v3.db');
     return _database!;
   }
 
@@ -30,6 +30,8 @@ class DatabaseHelper {
         ph_level REAL NOT NULL,
         dissolved_oxygen REAL NOT NULL,
         turbidity REAL NOT NULL,
+        ammonia REAL,
+        nitrite REAL,
         insight TEXT NOT NULL,
         feedback TEXT
       )
@@ -43,6 +45,8 @@ class DatabaseHelper {
     required double phLevel,
     required double dissolvedOxygen,
     required double turbidity,
+    double? ammonia,
+    double? nitrite,
     required String insight,
   }) async {
     final db = await instance.database;
@@ -52,6 +56,8 @@ class DatabaseHelper {
       'ph_level': phLevel,
       'dissolved_oxygen': dissolvedOxygen,
       'turbidity': turbidity,
+      'ammonia': ammonia,
+      'nitrite': nitrite,
       'insight': insight,
       'feedback': '',
     };
