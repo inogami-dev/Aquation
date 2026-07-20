@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class FeedbackInput extends StatefulWidget {
-  const FeedbackInput({super.key});
+  final ValueChanged<String>? onSendFeedback;
+
+  const FeedbackInput({super.key, this.onSendFeedback});
 
   @override
   State<FeedbackInput> createState() => FeedbackInputState();
@@ -154,6 +156,10 @@ class FeedbackInputState extends State<FeedbackInput>
                                           size: 20,
                                         ),
                                         onPressed: () {
+                                          final text = _controller.text.trim();
+                                          if (text.isNotEmpty && widget.onSendFeedback != null) {
+                                            widget.onSendFeedback!(text);
+                                          }
                                           // Clear input and remove focus on send
                                           _controller.clear();
                                           _focusNode.unfocus();

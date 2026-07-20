@@ -20,8 +20,49 @@ class SensorInfo {
   });
 }
 
+class WeatherForecast {
+  final String dayName;
+  final String condition;
+  final double temp;
+  final IconData icon;
+
+  const WeatherForecast({
+    required this.dayName,
+    required this.condition,
+    required this.temp,
+    required this.icon,
+  });
+}
+
 class SensorData {
   SensorData._();
+
+  static final List<WeatherForecast> weatherForecasts = [
+    const WeatherForecast(
+      dayName: "Today",
+      condition: "Sunny & Hot",
+      temp: 31.0,
+      icon: Icons.wb_sunny_rounded,
+    ),
+    const WeatherForecast(
+      dayName: "Tomorrow",
+      condition: "Heavy Rain",
+      temp: 24.5,
+      icon: Icons.thunderstorm_rounded,
+    ),
+    const WeatherForecast(
+      dayName: "Tue",
+      condition: "Cloudy",
+      temp: 26.0,
+      icon: Icons.cloud_rounded,
+    ),
+    const WeatherForecast(
+      dayName: "Wed",
+      condition: "Partly Cloudy",
+      temp: 28.5,
+      icon: Icons.wb_cloudy_rounded,
+    ),
+  ];
 
   static final ValueNotifier<List<SensorInfo>> parametersNotifier = ValueNotifier<List<SensorInfo>>([
     const SensorInfo(
@@ -41,22 +82,6 @@ class SensorData {
       icon: Icons.science,
     ),
     const SensorInfo(
-      title: "Ammonia",
-      value: 0.02,
-      unit: "mg/L",
-      status: "Safe",
-      color: Colors.blue,
-      icon: Icons.water_drop,
-    ),
-    const SensorInfo(
-      title: "Nitrite",
-      value: 0.08,
-      unit: "mg/L",
-      status: "Safe",
-      color: Colors.purple,
-      icon: Icons.opacity,
-    ),
-    const SensorInfo(
       title: "Dissolved Oxygen",
       value: 6.8,
       unit: "mg/L",
@@ -74,143 +99,200 @@ class SensorData {
     ),
   ]);
 
+  static final ValueNotifier<Set<String>> activeSensorTitlesNotifier = ValueNotifier<Set<String>>({
+    "Temperature",
+    "pH Level",
+    "Dissolved Oxygen",
+    "Turbidity",
+  });
+
   static List<SensorInfo> get parameters => parametersNotifier.value;
 
   static List<double> get values => parametersNotifier.value.map((p) => p.value).toList();
+
+  static SensorInfo createSensorInfo(String title, double value) {
+    switch (title) {
+      case "Temperature":
+        String status = "Normal";
+        Color color = Colors.orange;
+        if (value < 18.0) {
+          status = "Cold";
+          color = Colors.blue;
+        } else if (value >= 18.0 && value <= 28.0) {
+          status = "Optimal";
+          color = Colors.green;
+        } else if (value > 32.0) {
+          status = "High";
+          color = Colors.red;
+        }
+        return SensorInfo(
+          title: "Temperature",
+          value: value,
+          unit: "°C",
+          status: status,
+          color: color,
+          icon: Icons.thermostat,
+        );
+      case "pH Level":
+        String status = "Optimal";
+        Color color = Colors.green;
+        if (value < 6.5) {
+          status = "Acidic";
+          color = Colors.purple;
+        } else if (value > 8.5) {
+          status = "Alkaline";
+          color = Colors.red;
+        }
+        return SensorInfo(
+          title: "pH Level",
+          value: value,
+          unit: "",
+          status: status,
+          color: color,
+          icon: Icons.science,
+        );
+      case "Dissolved Oxygen":
+        String status = "Good";
+        Color color = Colors.teal;
+        if (value < 4.0) {
+          status = "Critical";
+          color = Colors.red;
+        } else if (value >= 4.0 && value <= 5.0) {
+          status = "Low";
+          color = Colors.orange;
+        }
+        return SensorInfo(
+          title: "Dissolved Oxygen",
+          value: value,
+          unit: "mg/L",
+          status: status,
+          color: color,
+          icon: Icons.air,
+        );
+      case "Turbidity":
+        String status = "Clear";
+        Color color = Colors.brown;
+        if (value >= 25.0 && value <= 40.0) {
+          status = "Moderate";
+          color = Colors.orange;
+        } else if (value > 40.0) {
+          status = "Turbid";
+          color = Colors.red;
+        }
+        return SensorInfo(
+          title: "Turbidity",
+          value: value,
+          unit: "NTU",
+          status: status,
+          color: color,
+          icon: Icons.blur_on,
+        );
+      case "Ammonia":
+        String status = "Safe";
+        Color color = Colors.blue;
+        if (value > 0.05) {
+          status = "Toxic";
+          color = Colors.red;
+        } else if (value > 0.02) {
+          status = "Warning";
+          color = Colors.orange;
+        }
+        return SensorInfo(
+          title: "Ammonia",
+          value: value,
+          unit: "mg/L",
+          status: status,
+          color: color,
+          icon: Icons.water_drop,
+        );
+      case "Nitrite":
+        String status = "Safe";
+        Color color = Colors.purple;
+        if (value > 0.1) {
+          status = "Toxic";
+          color = Colors.red;
+        } else if (value > 0.05) {
+          status = "Warning";
+          color = Colors.orange;
+        }
+        return SensorInfo(
+          title: "Nitrite",
+          value: value,
+          unit: "mg/L",
+          status: status,
+          color: color,
+          icon: Icons.opacity,
+        );
+      default:
+        throw ArgumentError("Unknown sensor title: $title");
+    }
+  }
+
+  static void updateActiveParameters() {
+    final activeTitles = activeSensorTitlesNotifier.value;
+    final List<SensorInfo> list = [];
+
+    for (final title in activeTitles) {
+      double defaultValue = 0.0;
+      switch (title) {
+        case "Temperature":
+          defaultValue = 27.6;
+          break;
+        case "pH Level":
+          defaultValue = 7.4;
+          break;
+        case "Dissolved Oxygen":
+          defaultValue = 6.8;
+          break;
+        case "Turbidity":
+          defaultValue = 14.0;
+          break;
+        case "Ammonia":
+          defaultValue = 0.02;
+          break;
+        case "Nitrite":
+          defaultValue = 0.08;
+          break;
+      }
+      list.add(createSensorInfo(title, defaultValue));
+    }
+    parametersNotifier.value = list;
+  }
 
   static void randomize() {
     // Record current parameters to history before updating them
     SensorHistory.addRecord(parametersNotifier.value);
 
     final random = Random();
+    final activeTitles = activeSensorTitlesNotifier.value;
+    final List<SensorInfo> newList = [];
 
-    // 1. Temperature: 15.0 to 35.0 °C
-    final temp = double.parse((15.0 + random.nextDouble() * 20.0).toStringAsFixed(1));
-    String tempStatus = "Normal";
-    Color tempColor = Colors.orange;
-    if (temp < 18.0) {
-      tempStatus = "Cold";
-      tempColor = Colors.blue;
-    } else if (temp >= 18.0 && temp <= 28.0) {
-      tempStatus = "Optimal";
-      tempColor = Colors.green;
-    } else if (temp > 32.0) {
-      tempStatus = "High";
-      tempColor = Colors.red;
+    for (final title in activeTitles) {
+      double value = 0.0;
+      switch (title) {
+        case "Temperature":
+          value = double.parse((15.0 + random.nextDouble() * 20.0).toStringAsFixed(1));
+          break;
+        case "pH Level":
+          value = double.parse((5.5 + random.nextDouble() * 3.5).toStringAsFixed(1));
+          break;
+        case "Dissolved Oxygen":
+          value = double.parse((2.0 + random.nextDouble() * 7.0).toStringAsFixed(1));
+          break;
+        case "Turbidity":
+          value = double.parse((5.0 + random.nextDouble() * 40.0).toStringAsFixed(1));
+          break;
+        case "Ammonia":
+          final raw = random.nextDouble() < 0.7 ? random.nextDouble() * 0.04 : random.nextDouble() * 0.8;
+          value = double.parse(raw.toStringAsFixed(2));
+          break;
+        case "Nitrite":
+          final raw = random.nextDouble() < 0.7 ? random.nextDouble() * 0.09 : random.nextDouble() * 0.7;
+          value = double.parse(raw.toStringAsFixed(2));
+          break;
+      }
+      newList.add(createSensorInfo(title, value));
     }
-
-    // 2. pH Level: 5.5 to 9.0
-    final ph = double.parse((5.5 + random.nextDouble() * 3.5).toStringAsFixed(1));
-    String phStatus = "Optimal";
-    Color phColor = Colors.green;
-    if (ph < 6.5) {
-      phStatus = "Acidic";
-      phColor = Colors.purple;
-    } else if (ph > 8.5) {
-      phStatus = "Alkaline";
-      phColor = Colors.red;
-    }
-
-    // 3. Ammonia: 0.0 to 1.0 mg/L (usually low)
-    final rawAmmonia = random.nextDouble() < 0.7 ? random.nextDouble() * 0.04 : random.nextDouble() * 0.8;
-    final ammonia = double.parse(rawAmmonia.toStringAsFixed(2));
-    String ammoniaStatus = "Safe";
-    Color ammoniaColor = Colors.blue;
-    if (ammonia >= 0.05 && ammonia <= 0.2) {
-      ammoniaStatus = "Warning";
-      ammoniaColor = Colors.orange;
-    } else if (ammonia > 0.2) {
-      ammoniaStatus = "Toxic";
-      ammoniaColor = Colors.red;
-    }
-
-    // 4. Nitrite: 0.0 to 1.0 mg/L (usually low)
-    final rawNitrite = random.nextDouble() < 0.7 ? random.nextDouble() * 0.09 : random.nextDouble() * 0.7;
-    final nitrite = double.parse(rawNitrite.toStringAsFixed(2));
-    String nitriteStatus = "Safe";
-    Color nitriteColor = Colors.purple;
-    if (nitrite >= 0.1 && nitrite <= 0.5) {
-      nitriteStatus = "Warning";
-      nitriteColor = Colors.orange;
-    } else if (nitrite > 0.5) {
-      nitriteStatus = "Toxic";
-      nitriteColor = Colors.red;
-    }
-
-    // 5. Dissolved Oxygen: 2.0 to 9.0 mg/L
-    final doVal = double.parse((2.0 + random.nextDouble() * 7.0).toStringAsFixed(1));
-    String doStatus = "Good";
-    Color doColor = Colors.teal;
-    if (doVal < 4.0) {
-      doStatus = "Critical";
-      doColor = Colors.red;
-    } else if (doVal >= 4.0 && doVal <= 5.0) {
-      doStatus = "Low";
-      doColor = Colors.orange;
-    }
-
-    // 6. Turbidity: 5.0 to 45.0 NTU
-    final turbidity = double.parse((5.0 + random.nextDouble() * 40.0).toStringAsFixed(1));
-    String turbidityStatus = "Clear";
-    Color turbidityColor = Colors.brown;
-    if (turbidity >= 25.0 && turbidity <= 40.0) {
-      turbidityStatus = "Moderate";
-      turbidityColor = Colors.orange;
-    } else if (turbidity > 40.0) {
-      turbidityStatus = "Turbid";
-      turbidityColor = Colors.red;
-    }
-
-    parametersNotifier.value = [
-      SensorInfo(
-        title: "Temperature",
-        value: temp,
-        unit: "°C",
-        status: tempStatus,
-        color: tempColor,
-        icon: Icons.thermostat,
-      ),
-      SensorInfo(
-        title: "pH Level",
-        value: ph,
-        unit: "",
-        status: phStatus,
-        color: phColor,
-        icon: Icons.science,
-      ),
-      SensorInfo(
-        title: "Ammonia",
-        value: ammonia,
-        unit: "mg/L",
-        status: ammoniaStatus,
-        color: ammoniaColor,
-        icon: Icons.water_drop,
-      ),
-      SensorInfo(
-        title: "Nitrite",
-        value: nitrite,
-        unit: "mg/L",
-        status: nitriteStatus,
-        color: nitriteColor,
-        icon: Icons.opacity,
-      ),
-      SensorInfo(
-        title: "Dissolved Oxygen",
-        value: doVal,
-        unit: "mg/L",
-        status: doStatus,
-        color: doColor,
-        icon: Icons.air,
-      ),
-      SensorInfo(
-        title: "Turbidity",
-        value: turbidity,
-        unit: "NTU",
-        status: turbidityStatus,
-        color: turbidityColor,
-        icon: Icons.blur_on,
-      ),
-    ];
+    parametersNotifier.value = newList;
   }
 }
-

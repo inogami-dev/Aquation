@@ -2,8 +2,236 @@ import 'package:aquation/features/ai/domain/sensor_data.dart';
 import 'package:flutter/material.dart';
 import 'widgets/parameter_detail_page.dart';
 
-class DashboardPage extends StatelessWidget {
+class InAppNotification {
+  static void show(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required Color color,
+  }) {
+    final overlayState = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) {
+        return Positioned(
+          top: MediaQuery.of(context).padding.top + 10,
+          left: 16,
+          right: 16,
+          child: Material(
+            color: Colors.transparent,
+            child: _NotificationBanner(
+              title: title,
+              message: message,
+              color: color,
+              onDismiss: () {
+                overlayEntry.remove();
+              },
+            ),
+          ),
+        );
+      },
+    );
+
+    overlayState.insert(overlayEntry);
+
+    // Auto dismiss after 4 seconds
+    Future.delayed(const Duration(seconds: 4), () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
+  }
+}
+
+class _NotificationBanner extends StatefulWidget {
+  final String title;
+  final String message;
+  final Color color;
+  final VoidCallback onDismiss;
+
+  const _NotificationBanner({
+    required this.title,
+    required this.message,
+    required this.color,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_NotificationBanner> createState() => _NotificationBannerState();
+}
+
+class _NotificationBannerState extends State<_NotificationBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<Offset> _offsetAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _offsetAnimation = Tween<Offset>(
+      begin: const Offset(0, -1.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _dismiss() async {
+    await _controller.reverse();
+    widget.onDismiss();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideTransition(
+      position: _offsetAnimation,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: widget.color.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: widget.color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.warning_amber_rounded,
+                color: widget.color,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Color(0xff0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.message,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.close_rounded, size: 18),
+              color: Colors.grey[400],
+              onPressed: _dismiss,
+              constraints: const BoxConstraints(),
+              padding: EdgeInsets.zero,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  bool _wasHealthy = true;
+
+  @override
+  void initState() {
+    super.initState();
+    SensorData.parametersNotifier.addListener(_onParametersChanged);
+
+    // Set initial state
+    final parameters = SensorData.parametersNotifier.value;
+    _wasHealthy = !_checkIfAnyUnhealthy(parameters);
+  }
+
+  @override
+  void dispose() {
+    SensorData.parametersNotifier.removeListener(_onParametersChanged);
+    super.dispose();
+  }
+
+  bool _checkIfAnyUnhealthy(List<SensorInfo> parameters) {
+    return parameters.any(
+      (p) =>
+          p.status == "Toxic" ||
+          p.status == "Critical" ||
+          p.status == "Warning" ||
+          p.status == "High" ||
+          p.status == "Acidic" ||
+          p.status == "Alkaline",
+    );
+  }
+
+  void _onParametersChanged() {
+    if (!mounted) return;
+
+    final parameters = SensorData.parametersNotifier.value;
+    final isUnhealthy = _checkIfAnyUnhealthy(parameters);
+    final isHealthy = !isUnhealthy;
+
+    // Trigger alert only when water quality transitioning from healthy -> unhealthy
+    if (isUnhealthy && _wasHealthy) {
+      final badParams = parameters
+          .where(
+            (p) =>
+                p.status == "Toxic" ||
+                p.status == "Critical" ||
+                p.status == "Warning" ||
+                p.status == "High" ||
+                p.status == "Acidic" ||
+                p.status == "Alkaline",
+          )
+          .map((p) => p.title)
+          .join(", ");
+
+      InAppNotification.show(
+        context,
+        title: "Water Quality Alert",
+        message: "Attention Required! Unhealthy levels detected: $badParams",
+        color: const Color(0xffEF4444),
+      );
+    }
+
+    _wasHealthy = isHealthy;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,57 +276,59 @@ class DashboardPage extends StatelessWidget {
       body: ValueListenableBuilder<List<SensorInfo>>(
         valueListenable: SensorData.parametersNotifier,
         builder: (context, parameters, child) {
-          // Calculate overall health state dynamically
-          final isHealthy = !parameters.any(
-            (p) =>
-                p.status == "Toxic" ||
-                p.status == "Critical" ||
-                p.status == "Warning" ||
-                p.status == "High" ||
-                p.status == "Acidic" ||
-                p.status == "Alkaline",
-          );
+          final isHealthy = !_checkIfAnyUnhealthy(parameters);
 
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Column(
               children: [
                 _buildOverviewCard(isHealthy),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Expanded(
-                  child: GridView.builder(
-                    itemCount: parameters.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 12,
-                          crossAxisSpacing: 12,
-                          childAspectRatio: 1.15,
-                        ),
-                    itemBuilder: (context, index) {
-                      final parameter = parameters[index];
-
-                      return _ParameterCard(
-                        title: parameter.title,
-                        value: parameter.value.toString(),
-                        unit: parameter.unit,
-                        status: parameter.status,
-                        color: parameter.color,
-                        icon: parameter.icon,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ParameterDetailPage(
-                                title: parameter.title,
-                                color: parameter.color,
-                                value: parameter.value,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      children: [
+                        _buildWeatherForecastCard(context),
+                        const SizedBox(height: 16),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: parameters.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: 1.15,
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
+                          itemBuilder: (context, index) {
+                            final parameter = parameters[index];
+
+                            return _ParameterCard(
+                              title: parameter.title,
+                              value: parameter.value.toString(),
+                              unit: parameter.unit,
+                              status: parameter.status,
+                              color: parameter.color,
+                              icon: parameter.icon,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ParameterDetailPage(
+                                      title: parameter.title,
+                                      color: parameter.color,
+                                      value: parameter.value,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -123,7 +353,7 @@ class DashboardPage extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: (isHealthy ? Colors.blue : Colors.red).withValues(alpha: .2),
+            color: (isHealthy ? Colors.blue : Colors.red).withOpacity(.2),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -133,7 +363,6 @@ class DashboardPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            // Decorative background circle
             Positioned(
               right: -30,
               top: -30,
@@ -142,7 +371,7 @@ class DashboardPage extends StatelessWidget {
                 height: 130,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.07),
+                  color: Colors.white.withOpacity(0.07),
                 ),
               ),
             ),
@@ -154,7 +383,7 @@ class DashboardPage extends StatelessWidget {
                 height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.04),
+                  color: Colors.white.withOpacity(0.04),
                 ),
               ),
             ),
@@ -176,7 +405,7 @@ class DashboardPage extends StatelessWidget {
                       Text(
                         "Water Quality",
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.75),
+                          color: Colors.white.withOpacity(0.75),
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
                         ),
@@ -200,7 +429,7 @@ class DashboardPage extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
+                      color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: Row(
@@ -231,7 +460,7 @@ class DashboardPage extends StatelessWidget {
                   Text(
                     "Updated • Just Now",
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: Colors.white.withOpacity(0.6),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -242,6 +471,130 @@ class DashboardPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildWeatherForecastCard(BuildContext context) {
+    final forecasts = SensorData.weatherForecasts;
+    final today = forecasts[0];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xffE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Weather Forecast",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Color(0xff0F172A),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xffEFF6FF),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  "Pond Area",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xff0F62FE),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              // Today's weather highlight
+              Expanded(
+                flex: 4,
+                child: Row(
+                  children: [
+                    Icon(today.icon, color: Colors.orange, size: 36),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${today.temp.toStringAsFixed(1)}°C",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff0F172A),
+                            ),
+                          ),
+                          Text(
+                            "Today • ${today.condition}",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(height: 32, width: 1, color: const Color(0xffE2E8F0)),
+              const SizedBox(width: 12),
+              // Upcoming days
+              Expanded(
+                flex: 6,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildWeatherForecastItem(forecasts[1].dayName, forecasts[1].icon, "${forecasts[1].temp.toStringAsFixed(1)}°", Colors.blue[600]!),
+                    _buildWeatherForecastItem(forecasts[2].dayName, forecasts[2].icon, "${forecasts[2].temp.toStringAsFixed(1)}°", Colors.grey[600]!),
+                    _buildWeatherForecastItem(forecasts[3].dayName, forecasts[3].icon, "${forecasts[3].temp.toStringAsFixed(1)}°", Colors.orange[600]!),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeatherForecastItem(String day, IconData icon, String temp, Color color) {
+    return Column(
+      children: [
+        Text(
+          day,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Color(0xff64748B),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Icon(icon, size: 18, color: color),
+        const SizedBox(height: 4),
+        Text(
+          temp,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Color(0xff0F172A),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -311,7 +664,7 @@ class _ParameterCardState extends State<_ParameterCard>
             border: Border.all(color: const Color(0xffE2E8F0)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: .02),
+                color: Colors.black.withOpacity(.02),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -330,7 +683,7 @@ class _ParameterCardState extends State<_ParameterCard>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: widget.color.withValues(alpha: .1),
+                        color: widget.color.withOpacity(.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(widget.icon, color: widget.color, size: 22),
@@ -338,12 +691,15 @@ class _ParameterCardState extends State<_ParameterCard>
                     ScaleTransition(
                       scale: _pulseAnimation,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
-                          color: widget.color.withValues(alpha: 0.1),
+                          color: widget.color.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: widget.color.withValues(alpha: 0.2),
+                            color: widget.color.withOpacity(0.2),
                             width: 1,
                           ),
                         ),

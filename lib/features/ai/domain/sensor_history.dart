@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 class SensorHistoryRecord {
   final DateTime timestamp;
   final List<SensorInfo> parameters;
+  final String? aiInsight;
+  final String? feedback;
 
   const SensorHistoryRecord({
     required this.timestamp,
     required this.parameters,
+    this.aiInsight,
+    this.feedback,
   });
 }
 
@@ -37,22 +41,6 @@ class SensorHistory {
               icon: Icons.science,
             ),
             SensorInfo(
-              title: "Ammonia",
-              value: 0.02,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.blue,
-              icon: Icons.water_drop,
-            ),
-            SensorInfo(
-              title: "Nitrite",
-              value: 0.07,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.purple,
-              icon: Icons.opacity,
-            ),
-            SensorInfo(
               title: "Dissolved Oxygen",
               value: 6.9,
               unit: "mg/L",
@@ -69,6 +57,7 @@ class SensorHistory {
               icon: Icons.blur_on,
             ),
           ],
+          aiInsight: "**Water Quality Status: Optimal**\n\nAll parameters are within healthy thresholds. Dissolved oxygen levels are good. No action is required.",
         ),
         // Today, 2 hours ago
         SensorHistoryRecord(
@@ -91,22 +80,6 @@ class SensorHistory {
               icon: Icons.science,
             ),
             SensorInfo(
-              title: "Ammonia",
-              value: 0.03,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.blue,
-              icon: Icons.water_drop,
-            ),
-            SensorInfo(
-              title: "Nitrite",
-              value: 0.09,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.purple,
-              icon: Icons.opacity,
-            ),
-            SensorInfo(
               title: "Dissolved Oxygen",
               value: 6.2,
               unit: "mg/L",
@@ -123,6 +96,7 @@ class SensorHistory {
               icon: Icons.blur_on,
             ),
           ],
+          aiInsight: "**Water Quality Status: Normal**\n\nThe water temperature is slightly elevated at 28.5°C, but still within acceptable parameters. Continue monitoring standard temperature patterns.",
         ),
         // Yesterday, 3 hours ago
         SensorHistoryRecord(
@@ -145,22 +119,6 @@ class SensorHistory {
               icon: Icons.science,
             ),
             SensorInfo(
-              title: "Ammonia",
-              value: 0.04,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.blue,
-              icon: Icons.water_drop,
-            ),
-            SensorInfo(
-              title: "Nitrite",
-              value: 0.11,
-              unit: "mg/L",
-              status: "Warning",
-              color: Colors.orange,
-              icon: Icons.opacity,
-            ),
-            SensorInfo(
               title: "Dissolved Oxygen",
               value: 5.7,
               unit: "mg/L",
@@ -177,6 +135,7 @@ class SensorHistory {
               icon: Icons.blur_on,
             ),
           ],
+          aiInsight: "**Water Quality Status: Normal (Slight Turbidity)**\n\nTurbidity is slightly elevated at 18.0 NTU. Dissolved oxygen is stable at 5.7 mg/L. Check water filtration systems to prevent further sediment accumulation.",
         ),
         // Yesterday, 6 hours ago
         SensorHistoryRecord(
@@ -199,22 +158,6 @@ class SensorHistory {
               icon: Icons.science,
             ),
             SensorInfo(
-              title: "Ammonia",
-              value: 0.22,
-              unit: "mg/L",
-              status: "Toxic",
-              color: Colors.red,
-              icon: Icons.water_drop,
-            ),
-            SensorInfo(
-              title: "Nitrite",
-              value: 0.08,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.purple,
-              icon: Icons.opacity,
-            ),
-            SensorInfo(
               title: "Dissolved Oxygen",
               value: 3.5,
               unit: "mg/L",
@@ -231,6 +174,8 @@ class SensorHistory {
               icon: Icons.blur_on,
             ),
           ],
+          aiInsight: "### ⚠️ CRITICAL WATER QUALITY ALERT\n\nMultiple parameters are in dangerous thresholds:\n\n1. **High Temperature (32.4°C)**: Dangerous heat stress risk for crayfish.\n2. **Acidic pH (6.2)**: Needs buffering.\n3. **Critical Dissolved Oxygen (3.5 mg/L)**: Severe suffocation risk.\n4. **Turbid Water (41.5 NTU)**: Reduced visibility and safety.\n\n**Recommendation:** Activate backup aerators immediately, add fresh cool water, and apply calcium carbonate to raise pH.",
+          feedback: "Activated backup aeration and fresh water buffer. Temperature reduced to 28°C and DO recovered to 6.0 mg/L within 2 hours.",
         ),
         // 2 Days ago
         SensorHistoryRecord(
@@ -253,22 +198,6 @@ class SensorHistory {
               icon: Icons.science,
             ),
             SensorInfo(
-              title: "Ammonia",
-              value: 0.01,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.blue,
-              icon: Icons.water_drop,
-            ),
-            SensorInfo(
-              title: "Nitrite",
-              value: 0.04,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.purple,
-              icon: Icons.opacity,
-            ),
-            SensorInfo(
               title: "Dissolved Oxygen",
               value: 7.4,
               unit: "mg/L",
@@ -285,6 +214,7 @@ class SensorHistory {
               icon: Icons.blur_on,
             ),
           ],
+          aiInsight: "**Water Quality Status: Optimal**\n\nPerfect parameters for optimal crayfish growth. Oxygen saturation is excellent. No intervention needed.",
         ),
         // 3 Days ago
         SensorHistoryRecord(
@@ -307,22 +237,6 @@ class SensorHistory {
               icon: Icons.science,
             ),
             SensorInfo(
-              title: "Ammonia",
-              value: 0.02,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.blue,
-              icon: Icons.water_drop,
-            ),
-            SensorInfo(
-              title: "Nitrite",
-              value: 0.06,
-              unit: "mg/L",
-              status: "Safe",
-              color: Colors.purple,
-              icon: Icons.opacity,
-            ),
-            SensorInfo(
               title: "Dissolved Oxygen",
               value: 6.8,
               unit: "mg/L",
@@ -339,15 +253,18 @@ class SensorHistory {
               icon: Icons.blur_on,
             ),
           ],
+          aiInsight: "**Water Quality Status: Optimal**\n\nValues are fully stable and within safe operating parameters.",
         ),
       ]);
 
   static List<SensorHistoryRecord> get history => historyNotifier.value;
 
-  static void addRecord(List<SensorInfo> parameters) {
+  static void addRecord(List<SensorInfo> parameters, {String? aiInsight, String? feedback}) {
     final newRecord = SensorHistoryRecord(
       timestamp: DateTime.now(),
       parameters: parameters,
+      aiInsight: aiInsight,
+      feedback: feedback,
     );
     final updatedList = [newRecord, ...historyNotifier.value];
 
