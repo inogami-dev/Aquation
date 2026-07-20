@@ -151,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Crayfish/Tab",
+                    "Crayfish/Tub Details",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -159,17 +159,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildDetailRow(
-                    Icons.waves_rounded,
-                    "Tab 1",
-                    "300 Craylings",
-                  ),
+                  _buildTubItem("Tub 1", "300 Crayfishes", "May 10, 2026"),
                   const Divider(height: 24, color: Color(0xffF1F5F9)),
-                  _buildDetailRow(
-                    Icons.waves_rounded,
-                    "Tab 2",
-                    "350 Craylings",
-                  ),
+                  _buildTubItem("Tub 2", "350 Crayfishes", "June 15, 2026"),
                 ],
               ),
             ),
@@ -531,6 +523,49 @@ class _ProfilePageState extends State<ProfilePage> {
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Color(0xff0F172A),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTubItem(String name, String count, String dateStarted) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.waves_rounded, color: Color(0xff0F62FE), size: 20),
+            const SizedBox(width: 12),
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.black54,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              count,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xff0F172A),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.only(left: 32),
+          child: Text(
+            "Date Started: $dateStarted",
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[500],
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],

@@ -20,8 +20,49 @@ class SensorInfo {
   });
 }
 
+class WeatherForecast {
+  final String dayName;
+  final String condition;
+  final double temp;
+  final IconData icon;
+
+  const WeatherForecast({
+    required this.dayName,
+    required this.condition,
+    required this.temp,
+    required this.icon,
+  });
+}
+
 class SensorData {
   SensorData._();
+
+  static final List<WeatherForecast> weatherForecasts = [
+    const WeatherForecast(
+      dayName: "Today",
+      condition: "Sunny & Hot",
+      temp: 31.0,
+      icon: Icons.wb_sunny_rounded,
+    ),
+    const WeatherForecast(
+      dayName: "Tomorrow",
+      condition: "Heavy Rain",
+      temp: 24.5,
+      icon: Icons.thunderstorm_rounded,
+    ),
+    const WeatherForecast(
+      dayName: "Tue",
+      condition: "Cloudy",
+      temp: 26.0,
+      icon: Icons.cloud_rounded,
+    ),
+    const WeatherForecast(
+      dayName: "Wed",
+      condition: "Partly Cloudy",
+      temp: 28.5,
+      icon: Icons.wb_cloudy_rounded,
+    ),
+  ];
 
   static final ValueNotifier<List<SensorInfo>> parametersNotifier = ValueNotifier<List<SensorInfo>>([
     const SensorInfo(

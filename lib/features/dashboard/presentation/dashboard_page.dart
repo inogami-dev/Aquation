@@ -283,41 +283,52 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Column(
               children: [
                 _buildOverviewCard(isHealthy),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Expanded(
-                  child: GridView.builder(
-                    itemCount: parameters.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 12,
-                          crossAxisSpacing: 12,
-                          childAspectRatio: 1.15,
-                        ),
-                    itemBuilder: (context, index) {
-                      final parameter = parameters[index];
-
-                      return _ParameterCard(
-                        title: parameter.title,
-                        value: parameter.value.toString(),
-                        unit: parameter.unit,
-                        status: parameter.status,
-                        color: parameter.color,
-                        icon: parameter.icon,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ParameterDetailPage(
-                                title: parameter.title,
-                                color: parameter.color,
-                                value: parameter.value,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      children: [
+                        _buildWeatherForecastCard(context),
+                        const SizedBox(height: 16),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: parameters.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: 1.15,
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
+                          itemBuilder: (context, index) {
+                            final parameter = parameters[index];
+
+                            return _ParameterCard(
+                              title: parameter.title,
+                              value: parameter.value.toString(),
+                              unit: parameter.unit,
+                              status: parameter.status,
+                              color: parameter.color,
+                              icon: parameter.icon,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ParameterDetailPage(
+                                      title: parameter.title,
+                                      color: parameter.color,
+                                      value: parameter.value,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -460,6 +471,130 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildWeatherForecastCard(BuildContext context) {
+    final forecasts = SensorData.weatherForecasts;
+    final today = forecasts[0];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xffE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Weather Forecast",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Color(0xff0F172A),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xffEFF6FF),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  "Pond Area",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xff0F62FE),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              // Today's weather highlight
+              Expanded(
+                flex: 4,
+                child: Row(
+                  children: [
+                    Icon(today.icon, color: Colors.orange, size: 36),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${today.temp.toStringAsFixed(1)}°C",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff0F172A),
+                            ),
+                          ),
+                          Text(
+                            "Today • ${today.condition}",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(height: 32, width: 1, color: const Color(0xffE2E8F0)),
+              const SizedBox(width: 12),
+              // Upcoming days
+              Expanded(
+                flex: 6,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildWeatherForecastItem(forecasts[1].dayName, forecasts[1].icon, "${forecasts[1].temp.toStringAsFixed(1)}°", Colors.blue[600]!),
+                    _buildWeatherForecastItem(forecasts[2].dayName, forecasts[2].icon, "${forecasts[2].temp.toStringAsFixed(1)}°", Colors.grey[600]!),
+                    _buildWeatherForecastItem(forecasts[3].dayName, forecasts[3].icon, "${forecasts[3].temp.toStringAsFixed(1)}°", Colors.orange[600]!),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeatherForecastItem(String day, IconData icon, String temp, Color color) {
+    return Column(
+      children: [
+        Text(
+          day,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Color(0xff64748B),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Icon(icon, size: 18, color: color),
+        const SizedBox(height: 4),
+        Text(
+          temp,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Color(0xff0F172A),
+          ),
+        ),
+      ],
     );
   }
 }
